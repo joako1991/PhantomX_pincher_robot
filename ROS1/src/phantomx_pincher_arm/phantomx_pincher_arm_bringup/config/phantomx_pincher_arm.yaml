@@ -1,0 +1,74 @@
+Response received with size: 8 bytes
+Servo 1: 499
+Response received with size: 8 bytes
+Servo 2: 511
+Response received with size: 8 bytes
+Servo 3: 192
+Response received with size: 8 bytes
+Servo 4: 511
+Response received with size: 8 bytes
+Servo 5: 7
+
+
+port: /dev/ttyUSB0
+read_rate: 15
+write_rate: 25
+
+joints:
+  arm_shoulder_pan_joint:
+    id: 1
+    neutral: 506
+    max_angle: 100
+    min_angle: -100
+    max_speed: 90
+    type: dynamixel
+    invert: false
+
+  arm_bicep_joint:
+    id: 2
+    neutral: 510
+    max_angle: 114
+    min_angle: -108
+    max_speed: 90
+    type: dynamixel
+    invert: true
+
+  arm_forearm_joint:
+    id: 3
+    neutral: 195
+    max_angle: 34
+    min_angle: -91
+    max_speed: 90
+    type: dynamixel
+    invert: false
+
+  arm_wrist_flex_joint:
+    id: 4
+    neutral: 512
+    max_angle: 96
+    min_angle: -103
+    max_speed: 90
+    type: dynamixel
+    invert: false
+
+  gripper_link_joint:
+    id: 5
+    neutral: 0
+    max_angle: 0
+    min_angle: -145
+    max_speed: 90
+    type: dynamixel
+    radius: 0.0078
+    connector: 0.024
+    offset: 0.016
+
+controllers:
+  arm_controller:
+    type: follow_controller
+    joints:
+      - arm_shoulder_pan_joint
+      - arm_bicep_joint
+      - arm_forearm_joint
+      - arm_wrist_flex_joint
+    action_name: arm_controller/follow_joint_trajectory
+    onboard: false

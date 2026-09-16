@@ -1,0 +1,7 @@
+<launch>
+
+    <node name="arbotix" pkg="arbotix_python" type="arbotix_driver" output="screen">
+        <param name="port" value="/dev/ttyUSB0"/>
+        <param name="baud" value="9600"/>
+    </node>
+</launch>

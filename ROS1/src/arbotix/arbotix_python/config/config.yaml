@@ -1,0 +1,30 @@
+joints:
+  joint1:
+    id: 1
+    neutral: 512
+    min_angle: -150
+    max_angle: 150
+
+  joint2:
+    id: 2
+    neutral: 512
+    min_angle: -150
+    max_angle: 150
+
+  joint3:
+    id: 3
+    neutral: 512
+    min_angle: -150
+    max_angle: 150
+
+  joint4:
+    id: 4
+    neutral: 512
+    min_angle: -150
+    max_angle: 150
+
+  joint5:
+    id: 5
+    neutral: 512
+    min_angle: -150
+    max_angle: 150
