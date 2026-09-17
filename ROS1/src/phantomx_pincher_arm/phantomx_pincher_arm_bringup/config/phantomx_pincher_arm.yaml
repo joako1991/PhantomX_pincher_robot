@@ -41,11 +41,11 @@ joints:
 
   gripper_link_joint:
     id: 5
-    neutral: 0
+    neutral: 512
     max_angle: 0
     min_angle: -145
     max_speed: 90
-    type: dynamixel
+    type: prismatic
     radius: 0.0078
     connector: 0.024
     offset: 0.016
