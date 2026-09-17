@@ -3,38 +3,14 @@
 
   <arg name="simulation" default="false"/>
 
-  <!-- Load the URDF you just showed -->
-  <param name="robot_description"
-         textfile="$(find phantomx_pincher_arm_description)/urdf/pincher_arm.urdf"/>
-
-  <node name="robot_state_pub"
-        pkg="robot_state_publisher"
-        type="robot_state_publisher"
-        output="screen"/>
-
-  <node name="arbotix"
-        pkg="arbotix_python"
-        type="arbotix_driver"
-        output="screen">
-
-    <rosparam file="$(find phantomx_pincher_arm_bringup)/config/phantomx_pincher_arm.yaml"
-              command="load"/>
-
+  <node name="arbotix" pkg="arbotix_python" type="arbotix_driver" output="screen">
+    <rosparam file="$(find phantomx_pincher_arm_bringup)/config/phantomx_pincher_arm.yaml" command="load"/>
     <param name="baud" value="9600"/>
     <param name="port" value="/dev/ttyUSB0"/>
     <param name="sim" value="$(arg simulation)"/>
-
   </node>
 
-  <node name="gripper_controller"
-        pkg="arbotix_controllers"
-        type="gripper_controller"
-        output="screen">
-
-    <rosparam file="$(find phantomx_pincher_arm_bringup)/config/phantomx_pincher_gripper.yaml"
-              command="load"/>
-
+  <node name="gripper_controller" pkg="arbotix_controllers" type="gripper_controller" output="screen">
+    <rosparam file="$(find phantomx_pincher_arm_bringup)/config/phantomx_pincher_gripper.yaml" command="load"/>
   </node>
-  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find phantomx_pincher_arm_bringup)/config/panel_config.rviz" />
-
 </launch>

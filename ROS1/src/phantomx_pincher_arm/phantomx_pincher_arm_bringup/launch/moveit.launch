@@ -3,7 +3,8 @@
 	<arg name="sim" default="false" />
 
 	<include file="$(find phantomx_pincher_arm_bringup)/launch/arm.launch"/>
-	<include file="$(find phantomx_pincher_arm_moveit_config)/launch/phantomx_pincher_arm_moveit.launch">
+
+	<include file="$(find phantomx_pincher_arm_moveit_config)/launch/custom_phantomx_pincher_arm_moveit.launch">
 		<arg name="sim" value="$(arg sim)"/>
 	</include>
 </launch>
