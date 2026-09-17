@@ -116,15 +116,61 @@
       </geometry>
     </collision>
   </link>
-  
-  <!-- gripper_link -->
-  <joint name="gripper_link_joint" type="revolute">
-    <origin rpy="0 0 0" xyz="0.110 0 0"/>
+
+  <!-- ========================= -->
+  <!-- Gripper                  -->
+  <!-- ========================= -->
+
+  <!-- Finger 1 -->
+  <joint name="gripper_link_joint" type="prismatic">
+    <origin xyz="0.070 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="30" velocity="0.5" lower="0.002" upper="0.032"/>
     <parent link="arm_wrist_flex_link"/>
-    <child link="gripper_link"/>
-    <limit effort="6" lower="-3.14" upper="3.14" velocity="1"/>
-    <axis xyz="1 0 0"/>
+    <child link="gripper_active_link"/>
   </joint>
-  <link name="gripper_link">
+
+  <link name="gripper_active_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://phantomx_pincher_arm_description/meshes/PincherFinger.stl"/>
+      </geometry>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://phantomx_pincher_arm_description/meshes/PincherFinger.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Finger 2 -->
+  <joint name="gripper2_joint" type="prismatic">
+    <origin xyz="0.070 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+
+    <limit effort="30" velocity="0.5" lower="-0.032" upper="-0.002"/>
+    <parent link="arm_wrist_flex_link"/>
+    <child link="gripper_active2_link"/>
+
+    <mimic joint="gripper_link_joint" multiplier="-1.0" offset="0.0"/>
+  </joint>
+
+  <link name="gripper_active2_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="3.14159265359 0 0"/>
+      <geometry>
+        <mesh filename="package://phantomx_pincher_arm_description/meshes/PincherFinger.stl"/>
+      </geometry>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="3.14159265359 0 0"/>
+      <geometry>
+        <mesh filename="package://phantomx_pincher_arm_description/meshes/PincherFinger.stl"/>
+      </geometry>
+    </collision>
   </link>
 </robot>
