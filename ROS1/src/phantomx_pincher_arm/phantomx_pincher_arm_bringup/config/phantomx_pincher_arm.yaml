@@ -1,15 +1,3 @@
-Response received with size: 8 bytes
-Servo 1: 499
-Response received with size: 8 bytes
-Servo 2: 511
-Response received with size: 8 bytes
-Servo 3: 192
-Response received with size: 8 bytes
-Servo 4: 511
-Response received with size: 8 bytes
-Servo 5: 7
-
-
 port: /dev/ttyUSB0
 read_rate: 15
 write_rate: 25
