@@ -38,8 +38,9 @@ from diagnostic_msgs.msg import *
 from arbotix_python.ax12 import *
 from arbotix_python.joints import *
 
-class DynamixelServo(Joint):
+from math import sin, cos, sqrt, asin, acos
 
+class DynamixelServo(Joint):
     def __init__(self, device, name, ns="~joints"):
         Joint.__init__(self, device, name)
         n = ns+"/"+name+"/"
@@ -76,7 +77,7 @@ class DynamixelServo(Joint):
 
         self.reads = 0.0                        # number of reads
         self.errors = 0                         # number of failed reads
-        self.total_reads = 0.0                  
+        self.total_reads = 0.0
         self.total_errors = [0.0]
 
         self.voltage = 0.0
@@ -248,6 +249,150 @@ class DynamixelServo(Joint):
             ticks_per_sec = max(1, int(self.speedToTicks(req.speed)))
             self.device.setSpeed(self.id, ticks_per_sec)
         return SetSpeedResponse()
+
+class DynamixelPrismaticServo(DynamixelServo):
+    """
+    Dynamixel servo driving a prismatic gripper through a linkage.
+
+    ROS position is expressed in meters.
+    Dynamixel internally remains expressed in radians/ticks.
+    """
+
+    def __init__(self, device, name, ns="~joints"):
+        super().__init__(device, name, ns)
+
+        n = ns + "/" + name + "/"
+
+        self.radius = rospy.get_param(n + "radius")
+        self.connector = rospy.get_param(n + "connector")
+        self.offset = rospy.get_param(n + "offset")
+
+        rospy.loginfo("%s prismatic joint", name)
+
+    def angleToPosition(self, angle):
+        """
+        Convert servo angle [rad] to linear gripper position [m].
+        """
+        return sqrt(self.connector * self.connector - (self.radius * sin(angle)) ** 2) + self.radius * cos(angle) - self.offset
+
+    def positionToAngle(self, position):
+        """
+        Convert linear gripper position [m] to servo angle [rad].
+        """
+
+        d = position + self.offset
+
+        c = (d * d + self.radius * self.radius - self.connector * self.connector) / (2.0 * d * self.radius)
+
+        # Numerical protection
+        c = max(-1.0, min(1.0, c))
+
+        return acos(c)
+
+    def setCurrentFeedback(self, reading):
+        """
+        Servo feedback arrives in ticks.
+        Publish the resulting gripper opening in meters.
+        """
+
+        if (reading > -1) and (reading < self.ticks):
+            self.reads += 1
+            self.total_reads += 1
+
+            last_position = self.position
+
+            angle = self.ticksToAngle(reading)
+            self.position = self.angleToPosition(angle)
+
+            t = rospy.Time.now()
+            dt = (t - self.last).to_sec()
+
+            if dt > 0:
+                self.velocity = (self.position - last_position) / dt
+
+            self.last = t
+
+        else:
+            rospy.logdebug(f"Invalid read of servo: id {self.id}, value {reading}")
+
+            self.errors += 1
+            self.total_reads += 1
+            return
+
+        if not self.active:
+            self.last_cmd = self.position
+
+    def setControlOutput(self, position):
+        """
+        Input position is in meters.
+        Convert it to servo angle and then ticks.
+        """
+        if self.enabled:
+
+            angle = self.positionToAngle(position)
+            ticks = DynamixelServo.angleToTicks(self, angle)
+
+            self.desired = position
+            self.dirty = True
+            self.active = True
+
+            return int(ticks)
+
+        return -1
+
+    def interpolate(self, frame):
+        """
+        Move toward desired linear gripper position.
+        """
+        if self.enabled and self.active and self.dirty:
+            cmd = self.desired - self.last_cmd
+
+            # max_speed is currently inherited in rad/s, so don't
+            # apply it directly to a value expressed in meters.
+            target = self.desired
+
+            angle = self.positionToAngle(target)
+            ticks = DynamixelServo.angleToTicks(self, angle)
+
+            self.last_cmd = target
+
+            if self.device.fake:
+                last_position = self.position
+                self.position = target
+
+                t = rospy.Time.now()
+                dt = (t - self.last).to_sec()
+
+                if dt > 0:
+                    self.velocity = (self.position - last_position) / dt
+
+                self.last = t
+
+                self.dirty = False
+                return None
+
+            self.dirty = False
+            return int(ticks)
+
+        else:
+            if self.device.fake:
+                self.velocity = 0.0
+                self.last = rospy.Time.now()
+
+            return None
+
+    def commandCb(self, req):
+        """
+        Float64 command in meters.
+        """
+        if self.enabled:
+            if self.controller and self.controller.active():
+                return
+
+            elif self.desired != req.data or not self.active:
+                self.dirty = True
+                self.active = True
+                self.desired = req.data
 
 class HobbyServo(Joint):
 
