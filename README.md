@@ -24,11 +24,12 @@ the end effector, and use MoveIt library from ROS1 Noetic.
   - [Hardware](#hardware)
   - [Software](#software)
   - [Safety precautions](#safety-precautions)
+
+- [Firmware flash](#firmware-flash)
   - [Arbotix-M and Arduino IDE](#arbotix-m-and-arduino-ide)
     - [Step 1: Install Arduino IDE 1.8](#step-1-install-arduino-ide-18)
     - [Install the ArbotiX board definition and libraries](#install-the-arbotix-board-definition-and-libraries)
   - [Programming ROS firmware in the robot](#programming-ros-firmware-in-the-robot)
-
 - [ROS1 installation](#ros1-installation)
   - [Installing ROS1 Noetic and MoveIt](#installing-ros1-noetic-and-moveit)
   - [Configure access to the serial port](#configure-access-to-the-serial-port)
@@ -93,6 +94,7 @@ All commands below assume that the terminal is initially opened in the root of t
 - Do not execute a trajectory if the RViz model does not match the physical
   pose.
 
+# Firmware flash
 ## Arbotix-M and Arduino IDE
 The Arbotix-M board is an Atmel MCU-based board, such as the Arduino boards.
 Therefore, they are compatible with Arduino IDE. The board contains an USB
@@ -196,7 +198,7 @@ ROS driver over USB.
 Now, we want to command the robot using ROS1 Noetic. This is the default ROS
 version for Ubuntu 20.04. For doing so, first of all, we have to install ROS.
 The full instructions are
-[here](https://wiki.ros.org/noetic/Installation/Ubuntu.
+[here](https://wiki.ros.org/noetic/Installation/Ubuntu).
 
 Briefly, you have to run the following commands:
 ```bash
@@ -235,7 +237,7 @@ echo "source /opt/ros/noetic/setup.zsh" >> ~/.zshrc
 source ~/.zshrc
 ```
 
-## 5. Configure access to the serial port
+## Configure access to the serial port
 
 Ubuntu normally assigns `/dev/ttyUSB*` devices to the `dialout` group. Add the
 current user to that group:
