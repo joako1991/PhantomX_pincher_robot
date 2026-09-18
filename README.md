@@ -35,7 +35,7 @@ the end effector, and use MoveIt library from ROS1 Noetic.
   - [Configure access to the serial port](#configure-access-to-the-serial-port)
   - [Running ROS1 MoveIt node](#running-ros1-moveit-node)
   - [Use MoveIt in RViz](#use-moveit-in-rviz)
-
+  - [Useful files to modify](#useful-files-to-modify)
 - [ROS2 installation](#ros2-installation)
 
 ## Repository layout
@@ -305,5 +305,18 @@ After RViz opens:
 Start with small movements. If planning succeeds in RViz but the physical arm
 does not move, check the controller state and serial connection before trying
 again.
+
+## Useful files to modify
+Some low-level configurations of the robot can be done by just changing
+some configuration files:
+
+- [phantomx_pincher_arm.yaml](ROS1/src/phantomx_pincher_arm/phantomx_pincher_arm_bringup/config/phantomx_pincher_arm.yaml) : This file contains the motor IDs, the type of driver to use, the servo tick at which the motor is in the neutral position (0 degrees mouvement), and you can invert the servo forward mouvement (either invert either direct).
+
+- [phantomx_pincher_arm.srdf](ROS1/src/phantomx_pincher_arm/phantomx_pincher_arm_moveit_config/config/phantomx_pincher_arm.srdf): This is the main MoveIt configuration file, that defines
+the collision points, the group_state which define some default positions,
+and we can disable collisions that can never arrive.
+
+- [pincher_arm.urdf](ROS1/src/phantomx_pincher_arm/phantomx_pincher_arm_description/urdf/pincher_arm.urdf)`: This is the main URDF file of the pincher robot that is currently used.
+
 
 # ROS2 installation
