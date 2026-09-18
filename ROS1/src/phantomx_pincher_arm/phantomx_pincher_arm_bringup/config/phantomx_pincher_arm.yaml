@@ -19,7 +19,7 @@ joints:
     min_angle: -108
     max_speed: 90
     type: dynamixel
-    invert: true
+    invert: false
 
   arm_forearm_joint:
     id: 3
