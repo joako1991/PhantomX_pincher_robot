@@ -320,3 +320,8 @@ and we can disable collisions that can never arrive.
 
 
 # ROS2 installation
+## Dependencies
+```bash
+sudo apt update && sudo apt install -y --no-install-recommends \
+    ros-humble-joint-state-publisher
+```
