@@ -170,4 +170,41 @@
       </geometry>
     </collision>
   </link>
+
+  <!-- ========================= -->
+  <!-- ROS 2 Control             -->
+  <!-- ========================= -->
+
+  <ros2_control name="PhantomXPincherSystem" type="system">
+
+    <hardware>
+      <plugin>mock_components/GenericSystem</plugin>
+    </hardware>
+
+    <joint name="arm_shoulder_pan_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+
+    <joint name="arm_bicep_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+
+    <joint name="arm_forearm_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+
+    <joint name="arm_wrist_flex_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+
+    <joint name="gripper_link_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+
+  </ros2_control>
 </robot>
