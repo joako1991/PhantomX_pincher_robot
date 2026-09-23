@@ -16,6 +16,7 @@ def generate_launch_description():
         'urdf',
         'phantomx_pincher.urdf.xacro'
     )
+    rviz_config_path = os.path.join(package_path, 'rviz', 'dummy_display_config.rviz')
 
     robot_description = xacro.process_file(xacro_file).toxml()
 
@@ -38,6 +39,7 @@ def generate_launch_description():
         Node(
             package='rviz2',
             executable='rviz2',
+            arguments=['-d', rviz_config_path],
             output='screen'
         )
     ])
