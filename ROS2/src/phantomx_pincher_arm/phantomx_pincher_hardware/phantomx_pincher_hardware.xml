@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<library path="phantomx_pincher_hardware">
+
+  <class
+    name="phantomx_pincher_hardware/PhantomXSystem"
+    type="phantomx_pincher_hardware::PhantomXSystem"
+    base_class_type="hardware_interface::SystemInterface">
+
+    <description>
+      ros2_control hardware interface for the PhantomX Pincher robotic arm.
+    </description>
+
+  </class>
+
+</library>

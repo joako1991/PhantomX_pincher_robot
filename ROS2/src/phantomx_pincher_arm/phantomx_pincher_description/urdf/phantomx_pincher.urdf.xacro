@@ -178,7 +178,8 @@
   <ros2_control name="PhantomXPincherSystem" type="system">
 
     <hardware>
-      <plugin>mock_components/GenericSystem</plugin>
+      <!-- <plugin>mock_components/GenericSystem</plugin> -->
+      <plugin>phantomx_pincher_hardware/PhantomXSystem</plugin>
     </hardware>
 
     <joint name="arm_shoulder_pan_joint">
