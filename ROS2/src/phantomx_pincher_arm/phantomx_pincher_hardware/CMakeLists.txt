@@ -14,6 +14,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 add_library(
   ${PROJECT_NAME}
   SHARED
+  src/arbotix_driver.cpp
   src/phantomx_system.cpp
 )
 
