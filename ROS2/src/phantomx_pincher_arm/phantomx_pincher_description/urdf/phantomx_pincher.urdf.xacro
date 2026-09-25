@@ -180,6 +180,8 @@
     <hardware>
       <!-- <plugin>mock_components/GenericSystem</plugin> -->
       <plugin>phantomx_pincher_hardware/PhantomXSystem</plugin>
+      <param name="port">/dev/ttyUSB0</param>
+      <param name="baud_rate">9600</param>
     </hardware>
 
     <joint name="arm_shoulder_pan_joint">
