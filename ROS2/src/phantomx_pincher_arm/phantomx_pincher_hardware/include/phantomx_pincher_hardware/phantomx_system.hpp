@@ -9,6 +9,7 @@
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
+#include "phantomx_pincher_hardware/arbotix_driver.hpp"
 #include "rclcpp/macros.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 
@@ -25,6 +26,7 @@ public:
     hardware_interface::return_type write(const rclcpp::Time& time, const rclcpp::Duration& period) override;
 
 private:
+    ArbotixDriver arbotix_driver_;
     std::vector<double> hw_positions_;
     std::vector<double> hw_commands_;
 };

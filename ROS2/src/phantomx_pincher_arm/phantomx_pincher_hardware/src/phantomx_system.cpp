@@ -16,6 +16,23 @@ hardware_interface::CallbackReturn PhantomXSystem::on_init(const hardware_interf
         return hardware_interface::CallbackReturn::ERROR;
     }
 
+    // Variables availables in the URDF file phantomx_pincher.urdf.xacro
+    auto port_it = info_.hardware_parameters.find("port");
+    auto baud_it = info_.hardware_parameters.find("baud_rate");
+
+    if (port_it == info_.hardware_parameters.end() || baud_it == info_.hardware_parameters.end()) {
+        RCLCPP_ERROR(rclcpp::get_logger("PhantomXSystem"), "Missing hardware parameters 'port' and/or 'baud_rate'");
+        return hardware_interface::CallbackReturn::ERROR;
+    }
+
+    const std::string port = port_it->second;
+    const int baud_rate = std::stoi(baud_it->second);
+
+    if (!arbotix_driver_.open(port, baud_rate)) {
+        RCLCPP_ERROR(rclcpp::get_logger("PhantomXSystem"), "Could not open ArbotiX serial port");
+        return hardware_interface::CallbackReturn::ERROR;
+    }
+
     hw_positions_.resize(info_.joints.size(), 0.0);
     hw_commands_.resize(info_.joints.size(), 0.0);
 
