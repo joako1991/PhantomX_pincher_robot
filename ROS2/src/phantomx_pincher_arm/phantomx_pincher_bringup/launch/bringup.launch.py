@@ -33,14 +33,13 @@ def generate_launch_description():
     ).toxml()
 
     return LaunchDescription([
-
         Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
             parameters=[
                 {'robot_description': robot_description}
             ],
-            output='screen'
+            output='screen',
         ),
 
         Node(package="controller_manager",
@@ -49,7 +48,6 @@ def generate_launch_description():
             remappings=[("~/robot_description", "/robot_description")],
             output="screen",
         ),
-
         Node(
             package='controller_manager',
             executable='spawner',
@@ -60,7 +58,6 @@ def generate_launch_description():
             ],
             output='screen'
         ),
-
         Node(
             package='controller_manager',
             executable='spawner',
