@@ -481,4 +481,43 @@ bool ArbotixDriver::read_register(uint8_t servo_id, uint8_t address, uint8_t len
     return answer;
 }
 
+bool ArbotixDriver::write_register(uint8_t servo_id, uint8_t address, const std::vector<uint8_t>& data) {
+    /*
+     * Dynamixel Protocol 1.0 WRITE_DATA
+     *
+     * FF FF ID LENGTH 03 ADDRESS DATA... CHECKSUM
+     */
+
+    const uint8_t instruction = 0x03;
+    const uint8_t packet_length = static_cast<uint8_t>(data.size() + 3);
+
+    /*
+     * Everything used for checksum:
+     *
+     * ID LENGTH INSTRUCTION ADDRESS DATA...
+     */
+    std::vector<uint8_t> body{servo_id, packet_length, instruction, address};
+
+    /*
+     * IMPORTANT:
+     * Add data BEFORE calculating checksum.
+     */
+    body.insert(body.end(), data.begin(), data.end());
+    std::vector<uint8_t> packet{0xFF, 0xFF};
+
+    packet.insert(packet.end(), body.begin(), body.end());
+
+    /*
+     * Checksum must include DATA bytes.
+     */
+    packet.emplace_back(checksum(body));
+
+    if (tcflush(serial_fd_, TCIFLUSH) != 0) {
+        std::cerr << "[ArbotixDriver] WARNING: Could not flush RX buffer: "
+            << std::strerror(errno) << std::endl;
+    }
+
+    return write_bytes(packet);
+}
+
 }  // namespace phantomx_pincher_hardware
