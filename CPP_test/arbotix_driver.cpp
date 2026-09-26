@@ -197,40 +197,49 @@ bool ArbotixDriver::configure_port(int baud_rate) {
     return true;
 }
 
+bool ArbotixDriver::enable_torque(uint8_t servo_id, bool enable) {
+    return write_register(servo_id, 24, {static_cast<uint8_t>(enable ? 1 : 0)});
+}
 
-bool ArbotixDriver::write_bytes(const std::vector<uint8_t>& data) {
+
+bool ArbotixDriver::write_bytes(const std::vector<uint8_t>& data)
+{
     if (!is_open()) {
-        std::cerr << "[ArbotixDriver] ERROR: Cannot write: " << "serial port is not open" << std::endl;
+        std::cerr << "[ArbotixDriver] ERROR: Cannot write: serial port is not open" << std::endl;
         return false;
     }
 
-    // Debug output.
-    std::ostringstream tx_stream;
-    tx_stream << "TX:";
+    std::size_t total_written = 0;
 
-    for (const auto byte : data) {
-        tx_stream << " " << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
+    std::cout << "[ArbotixDriver] TX:";
+
+    for (const uint8_t byte : data) {
+        std::cout << " " << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
     }
+    std::cout << std::dec << std::endl;
 
-    std::cout << "[ArbotixDriver] " << tx_stream.str() << std::endl;
-    int n_written = 0;
-    std::size_t i = 0;
+    while (total_written < data.size()) {
+        const ssize_t n_written = ::write(serial_fd_, data.data() + total_written, data.size() - total_written);
 
-    do {
-        n_written = ::write(serial_fd_, &data[i], data.size() - n_written);
-        if (n_written > 0) {
-            i += static_cast<std::size_t>(n_written);
+        if (n_written < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+
+            std::cerr << "[ArbotixDriver] ERROR: Serial write failed: " << std::strerror(errno) << std::endl;
+            return false;
         }
-    } while (data.size() > i && n_written > 0);
 
-    if (n_written < 0) {
-        std::cerr << "[ArbotixDriver] ERROR: Serial write failed: " << std::strerror(errno)<< std::endl;
-        return false;
+        if (n_written == 0) {
+            std::cerr << "[ArbotixDriver] ERROR: Serial write returned 0 bytes" << std::endl;
+            return false;
+        }
+
+        total_written += static_cast<std::size_t>(n_written);
     }
 
-    // Flush the port.
     if (tcdrain(serial_fd_) != 0) {
-        std::cerr << "[ArbotixDriver] ERROR: Serial flush failed: " << std::strerror(errno) << std::endl;
+        std::cerr << "[ArbotixDriver] ERROR: tcdrain failed: " << std::strerror(errno) << std::endl;
         return false;
     }
 
@@ -326,15 +335,6 @@ std::vector<uint8_t> ArbotixDriver::read_bytes(std::size_t max_size) {
 
     if (buffer.empty()) {
         std::cout << "[ArbotixDriver] Read timeout" << std::endl;
-    } else {
-        std::ostringstream rx_stream;
-
-        rx_stream << "RX:";
-        for (const auto byte : buffer) {
-            rx_stream << " " << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
-        }
-
-        std::cout << "[ArbotixDriver] " << rx_stream.str() << std::endl;
     }
 
     return buffer;
@@ -488,12 +488,69 @@ bool ArbotixDriver::read_register(uint8_t servo_id, uint8_t address, uint8_t len
     if (!write_bytes(packet)) {
         return false;
     }
-    std::cout << "Start reading answer..." << std::endl;
     // Global timeout while debugging serial communication.
     bool answer = read_status_packet(servo_id, data, 50);
-    std::cout << "Read finished" << std::endl;
 
     return answer;
+}
+
+bool ArbotixDriver::write_register(uint8_t servo_id, uint8_t address, const std::vector<uint8_t>& data) {
+    /*
+     * Dynamixel Protocol 1.0 WRITE_DATA
+     *
+     * FF FF ID LENGTH 03 ADDRESS DATA... CHECKSUM
+     */
+
+    const uint8_t instruction = 0x03;
+    const uint8_t packet_length = static_cast<uint8_t>(data.size() + 3);
+
+    /*
+     * Everything used for checksum:
+     *
+     * ID LENGTH INSTRUCTION ADDRESS DATA...
+     */
+    std::vector<uint8_t> body{servo_id, packet_length, instruction, address};
+
+    /*
+     * IMPORTANT:
+     * Add data BEFORE calculating checksum.
+     */
+    body.insert(body.end(), data.begin(), data.end());
+    std::vector<uint8_t> packet{0xFF, 0xFF};
+
+    packet.insert(packet.end(), body.begin(), body.end());
+
+    /*
+     * Checksum must include DATA bytes.
+     */
+    packet.emplace_back(checksum(body));
+
+    if (tcflush(serial_fd_, TCIFLUSH) != 0) {
+        std::cerr << "[ArbotixDriver] WARNING: Could not flush RX buffer: "
+            << std::strerror(errno) << std::endl;
+    }
+
+    return write_bytes(packet);
+}
+
+bool ArbotixDriver::write_position(uint8_t servo_id, uint16_t position) {
+    const uint8_t low = static_cast<uint8_t>(position & 0xFF);
+    const uint8_t high = static_cast<uint8_t>((position >> 8) & 0xFF);
+    return write_register(servo_id, 30, {low, high});
+}
+
+bool ArbotixDriver::read_position(uint8_t servo_id, uint16_t& position) {
+    std::vector<uint8_t> data;
+    if (!read_register(servo_id, 36, 2, data)) {
+        return false;
+    }
+
+    if (data.size() != 2) {
+        return false;
+    }
+    position = static_cast<uint16_t>(data[0]) | (static_cast<uint16_t>(data[1]) << 8);
+
+    return true;
 }
 
 }  // namespace phantomx_pincher_hardware
