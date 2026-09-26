@@ -52,14 +52,13 @@ hardware_interface::CallbackReturn PhantomXSystem::on_init(const hardware_interf
     hw_positions_.resize(info_.joints.size(), 0.0);
     hw_commands_.resize(info_.joints.size(), 0.0);
 
-  RCLCPP_INFO(rclcpp::get_logger("PhantomXSystem"), "Initializing PhantomX mock hardware with %zu joints", info_.joints.size());
+    RCLCPP_INFO(rclcpp::get_logger("PhantomXSystem"), "Initializing PhantomX hardware with %zu joints", info_.joints.size());
 
-  /*
-   * Verify that every joint exposes exactly:
-   *
-   *   command interface: position
-   *   state interface:   position
-   */
+    /*
+    * Verify that every joint exposes exactly:
+    *   command interface: position
+    *   state interface:   position
+    */
     for (const auto & joint : info_.joints) {
         if (joint.command_interfaces.size() != 1) {
             RCLCPP_ERROR(rclcpp::get_logger("PhantomXSystem"),
