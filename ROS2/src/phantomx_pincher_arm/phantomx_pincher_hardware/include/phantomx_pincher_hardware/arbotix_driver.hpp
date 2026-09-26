@@ -9,11 +9,9 @@
 
 #include <termios.h>
 
-namespace phantomx_pincher_hardware
-{
+namespace phantomx_pincher_hardware {
 
-class ArbotixDriver
-{
+class ArbotixDriver {
 public:
     ArbotixDriver();
     ~ArbotixDriver();
