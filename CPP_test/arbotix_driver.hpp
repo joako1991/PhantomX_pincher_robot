@@ -19,12 +19,13 @@ public:
     ~ArbotixDriver();
 
     bool open(const std::string & port, int baud_rate);
-    void close();
     bool is_open() const;
     bool write_bytes(const std::vector<uint8_t> & data);
     std::vector<uint8_t> read_bytes(std::size_t max_size);
     bool read_register(uint8_t servo_id, uint8_t address, uint8_t length, std::vector<uint8_t> & data);
+    void close();
 
+    void wakeUpSerial();
 private:
     bool configure_port(int baud_rate);
     uint8_t checksum(std::vector<uint8_t>& data);

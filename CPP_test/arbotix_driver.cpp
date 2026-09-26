@@ -59,15 +59,41 @@ bool ArbotixDriver::open(const std::string& port, int baud_rate) {
         std::cerr << "[ArbotixDriver] WARNING: tcflush failed: " << std::strerror(errno) << std::endl;
     }
 
-    std::vector<uint8_t> dummy;
-    read_register(1, 36, 2, dummy);
-    std::cout << "Dummy message sent" << std::endl;
-    
+    wakeUpSerial();
+
     std::cout << "[ArbotixDriver] Opened serial port " << port << " at " << baud_rate << " baud" << std::endl;
 
     return true;
 }
 
+void ArbotixDriver::wakeUpSerial() {
+    /// For some reason, the system needs a first package to wake up.
+    // In order to add external logic outside, we do it during initialization.
+    // Without this message, the first package is always lost.
+    const uint8_t servo_id = 1;
+    const uint8_t packet_length = 4;
+    const uint8_t instruction = 0x02;
+    const uint8_t address = 36;
+    const uint8_t length = 2;
+
+    std::vector<uint8_t> body{servo_id, packet_length, instruction, address, length};
+    std::vector<uint8_t> packet{0xFF, 0xFF};
+
+    packet.insert(packet.end(), body.begin(), body.end());
+    packet.emplace_back(checksum(body));
+
+    // Discard anything already present in RX.
+    tcflush(serial_fd_, TCIFLUSH);
+
+    // Send the dummy packet.
+    write_bytes(packet);
+
+    // Give the serial interface time to process it.
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+
+    // Discard any possible response.
+    tcflush(serial_fd_, TCIFLUSH);
+}
 
 void ArbotixDriver::close() {
     if (serial_fd_ >= 0) {
