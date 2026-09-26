@@ -20,6 +20,10 @@ public:
     void close();
     bool is_open() const;
 
+    bool write_position(uint8_t servo_id, uint16_t position);
+    bool read_position(uint8_t servo_id, uint16_t& position);
+    bool enable_torque(uint8_t servo_id, bool enable);
+
 private:
     bool configure_port(int baud_rate);
     uint8_t checksum(std::vector<uint8_t>& data);

@@ -196,6 +196,10 @@ bool ArbotixDriver::configure_port(int baud_rate) {
     return true;
 }
 
+bool ArbotixDriver::enable_torque(uint8_t servo_id, bool enable) {
+    return write_register(servo_id, 24, {static_cast<uint8_t>(enable ? 1 : 0)});
+}
+
 
 bool ArbotixDriver::write_bytes(const std::vector<uint8_t>& data)
 {
@@ -518,6 +522,26 @@ bool ArbotixDriver::write_register(uint8_t servo_id, uint8_t address, const std:
     }
 
     return write_bytes(packet);
+}
+
+bool ArbotixDriver::write_position(uint8_t servo_id, uint16_t position) {
+    const uint8_t low = static_cast<uint8_t>(position & 0xFF);
+    const uint8_t high = static_cast<uint8_t>((position >> 8) & 0xFF);
+    return write_register(servo_id, 30, {low, high});
+}
+
+bool ArbotixDriver::read_position(uint8_t servo_id, uint16_t& position) {
+    std::vector<uint8_t> data;
+    if (!read_register(servo_id, 36, 2, data)) {
+        return false;
+    }
+
+    if (data.size() != 2) {
+        return false;
+    }
+    position = static_cast<uint16_t>(data[0]) | (static_cast<uint16_t>(data[1]) << 8);
+
+    return true;
 }
 
 }  // namespace phantomx_pincher_hardware
