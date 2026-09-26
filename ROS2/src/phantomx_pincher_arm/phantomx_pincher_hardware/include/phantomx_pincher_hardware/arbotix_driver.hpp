@@ -19,8 +19,6 @@ public:
     bool open(const std::string & port, int baud_rate);
     void close();
     bool is_open() const;
-    bool write_bytes(const std::vector<uint8_t> & data);
-    std::vector<uint8_t> read_bytes(std::size_t max_size);
     bool read_register(uint8_t servo_id, uint8_t address, uint8_t length, std::vector<uint8_t> & data);
 
 private:
@@ -30,6 +28,8 @@ private:
     bool read_status_packet(uint8_t expected_id, std::vector<uint8_t> & parameters, int timeout_ms);
     void wakeUpSerial();
 
+    bool write_bytes(const std::vector<uint8_t> & data);
+    std::vector<uint8_t> read_bytes(std::size_t max_size);
 
     int serial_fd_;
     std::string port_;
