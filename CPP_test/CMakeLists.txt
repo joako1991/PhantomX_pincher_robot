@@ -29,3 +29,23 @@ target_compile_options(
     -Wextra
     -Wpedantic
 )
+
+add_executable(
+    arbotix_rw_test
+    main_rw_test.cpp
+    arbotix_driver.cpp
+)
+
+target_include_directories(
+    arbotix_rw_test
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_options(
+    arbotix_rw_test
+    PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+)
