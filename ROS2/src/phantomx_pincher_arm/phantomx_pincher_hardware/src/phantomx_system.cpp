@@ -1,6 +1,7 @@
 #include "phantomx_pincher_hardware/phantomx_system.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <string>
 #include <vector>
@@ -8,6 +9,21 @@
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "pluginlib/class_list_macros.hpp"
 #include "rclcpp/rclcpp.hpp"
+
+constexpr double RAW_CENTER = 512.0;
+constexpr double RAD_PER_TICK = (300.0 * M_PI / 180.0) / 1023.0;
+
+double raw_to_radians(uint16_t raw) {
+    return (static_cast<double>(raw) - RAW_CENTER) * RAD_PER_TICK;
+}
+
+uint16_t radians_to_raw(double radians) {
+    double raw = RAW_CENTER + radians / RAD_PER_TICK;
+
+    raw = std::clamp(raw, 0.0, 1023.0);
+
+    return static_cast<uint16_t>(std::lround(raw));
+}
 
 namespace phantomx_pincher_hardware {
 
