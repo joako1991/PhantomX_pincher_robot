@@ -197,30 +197,36 @@ bool ArbotixDriver::configure_port(int baud_rate) {
 }
 
 
-bool ArbotixDriver::write_bytes(const std::vector<uint8_t>& data) {
+bool ArbotixDriver::write_bytes(const std::vector<uint8_t>& data)
+{
     if (!is_open()) {
-        std::cerr << "[ArbotixDriver] ERROR: Cannot write: " << "serial port is not open" << std::endl;
+        std::cerr << "[ArbotixDriver] ERROR: Cannot write: serial port is not open" << std::endl;
         return false;
     }
 
-    int n_written = 0;
-    std::size_t i = 0;
+    std::size_t total_written = 0;
+    while (total_written < data.size()) {
+        const ssize_t n_written = ::write(serial_fd_, data.data() + total_written, data.size() - total_written);
 
-    do {
-        n_written = ::write(serial_fd_, &data[i], data.size() - n_written);
-        if (n_written > 0) {
-            i += static_cast<std::size_t>(n_written);
+        if (n_written < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+
+            std::cerr << "[ArbotixDriver] ERROR: Serial write failed: " << std::strerror(errno) << std::endl;
+            return false;
         }
-    } while (data.size() > i && n_written > 0);
 
-    if (n_written < 0) {
-        std::cerr << "[ArbotixDriver] ERROR: Serial write failed: " << std::strerror(errno)<< std::endl;
-        return false;
+        if (n_written == 0) {
+            std::cerr << "[ArbotixDriver] ERROR: Serial write returned 0 bytes" << std::endl;
+            return false;
+        }
+
+        total_written += static_cast<std::size_t>(n_written);
     }
 
-    // Flush the port.
     if (tcdrain(serial_fd_) != 0) {
-        std::cerr << "[ArbotixDriver] ERROR: Serial flush failed: " << std::strerror(errno) << std::endl;
+        std::cerr << "[ArbotixDriver] ERROR: tcdrain failed: " << std::strerror(errno) << std::endl;
         return false;
     }
 
