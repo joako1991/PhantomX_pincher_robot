@@ -132,32 +132,35 @@ std::vector<hardware_interface::CommandInterface> PhantomXSystem::export_command
 }
 
 
-hardware_interface::return_type PhantomXSystem::read(const rclcpp::Time& time,  const rclcpp::Duration& period) {
-    /*
-     * MOCK HARDWARE:
-     *
-     * The simulated joint position is simply the last command
-     * received by the hardware.
-    */
-    hw_positions_ = hw_commands_;
+hardware_interface::return_type PhantomXSystem::read(const rclcpp::Time&, const rclcpp::Duration&) {
+    // We only handle the mouvement servos, and not the gripper (i<4)
+    for (std::size_t i = 0; i < 4; ++i) {
+        const uint8_t servo_id = static_cast<uint8_t>(i + 1);
+        uint16_t raw_position = 0;
+
+        if (!arbotix_driver_.read_position(servo_id, raw_position)) {
+            RCLCPP_WARN(rclcpp::get_logger("PhantomXSystem"),
+                "Failed to read servo %u. Keeping previous position.", servo_id);
+            continue;
+        }
+        hw_positions_[i] = raw_to_radians(raw_position);
+    }
 
     return hardware_interface::return_type::OK;
 }
 
 
-hardware_interface::return_type PhantomXSystem::write(const rclcpp::Time& time, const rclcpp::Duration& period) {
-    /*
-     * MOCK HARDWARE:
-     *
-     * Nothing has to be transmitted yet.
-     *
-     * Later, this method will:
-     *
-     *   1. convert radians/metres to Dynamixel units
-     *   2. build the ArbotiX command
-     *   3. send it through the serial port
-    */
+hardware_interface::return_type PhantomXSystem::write(const rclcpp::Time&, const rclcpp::Duration&) {
+    // We only handle the mouvement servos, and not the gripper (i<4)
+    for (std::size_t i = 0; i < 4; ++i) {
+        const uint8_t servo_id = static_cast<uint8_t>(i + 1);
+        const uint16_t raw_position = radians_to_raw(hw_commands_[i]);
 
+        if (!arbotix_driver_.write_position(servo_id, raw_position)) {
+            RCLCPP_ERROR(rclcpp::get_logger("PhantomXSystem"), "Failed to command servo %u", servo_id);
+            return hardware_interface::return_type::ERROR;
+        }
+    }
     return hardware_interface::return_type::OK;
 }
 }  // namespace phantomx_pincher_hardware
